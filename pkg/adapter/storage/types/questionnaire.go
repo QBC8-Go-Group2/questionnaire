@@ -11,7 +11,7 @@ type Questionnaire struct {
 	OwnerID         string       `gorm:"not null;size:100"`
 	Title           string       `gorm:"not null;size:255"`
 	Description     string       `gorm:"size:500"`
-	Duration        time.Time    `gorm:"not null"`
+	Duration        uint         `gorm:"not null"`
 	Editable        bool         `gorm:"not null"`
 	Randomable      bool         `gorm:"not null"`
 	CreatedAt       time.Time    `gorm:"autoCreateTime"`

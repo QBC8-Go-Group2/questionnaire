@@ -5,7 +5,7 @@ import "time"
 type (
 	RoleType uint8
 	UserDbID uint
-	UserID   uint
+	UserID   string
 )
 
 const (

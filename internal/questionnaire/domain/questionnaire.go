@@ -16,7 +16,7 @@ type Questionnaire struct {
 	OwnerID         userDomian.UserID
 	Title           string
 	Description     string
-	Duration        time.Time
+	Duration        uint // minutes
 	Editable        bool
 	Randomable      bool
 	CreatedAt       time.Time
