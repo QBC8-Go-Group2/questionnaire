@@ -10,6 +10,10 @@ type service struct {
 	repo port.Repo
 }
 
+func NewService(repo port.Repo) port.Service {
+	return &service{repo}
+}
+
 func (s *service) CreateUser(ctx context.Context, user domain.User) (domain.UserDbID, error) {
 	//TODO implement me
 	panic("implement me")
