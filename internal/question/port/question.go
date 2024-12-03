@@ -2,15 +2,13 @@ package port
 
 import (
 	"context"
-	"github.com/QBC8-Go-Group2/questionnaire/internal/questionnaire/domain"
+	"github.com/QBC8-Go-Group2/questionnaire/internal/question/domain"
 )
 
 type Repo interface {
-	Create(ctx context.Context, questionnaire domain.Questionnaire) (domain.QuestionnaireDbID, error)
-	Update(ctx context.Context, questionnaire domain.Questionnaire) (domain.QuestionnaireID, error)
-	FindWithQuestionnaireID(ctx context.Context, questionnaireId domain.QuestionnaireID) (domain.Questionnaire, error)
-	FindWithQuestionnaireDbID(ctx context.Context, questionnaireId domain.QuestionnaireDbID) (domain.Questionnaire, error)
-	DeleteWithQuestionnaireID(ctx context.Context, questionnaireId domain.QuestionnaireID) error
-	DeleteWithUserDbId(ctx context.Context, questionnaireId domain.QuestionnaireDbID) error
+	Create(ctx context.Context, question domain.Question) (domain.QuestionDbID, error)
+	Update(ctx context.Context, question domain.Question) (domain.QuestionDbID, error)
+	FindWithQuestionID(ctx context.Context, questionId domain.QuestionDbID) (domain.Question, error)
+	DeleteWithQuestionID(ctx context.Context, questionId domain.QuestionDbID) error
 	// add filters
 }
