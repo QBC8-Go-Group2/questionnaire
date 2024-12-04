@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/QBC8-Go-Group2/questionnaire/config"
+	"github.com/QBC8-Go-Group2/questionnaire/pkg/adapter/storage/types"
 	"github.com/QBC8-Go-Group2/questionnaire/pkg/mysql"
 	"gorm.io/gorm"
 )
@@ -19,6 +20,9 @@ func NewApp(config config.Config) (App, error) {
 	a := app{config: config}
 
 	if err := a.setDB(); err != nil {
+		return nil, err
+	}
+	if err := a.migrationDB(); err != nil {
 		return nil, err
 	}
 
@@ -47,5 +51,24 @@ func (a app) setDB() error {
 		return err
 	}
 	a.db = db
+	return nil
+}
+
+func (a app) migrationDB() error {
+	if err := a.db.Table("users").AutoMigrate(&types.User{}); err != nil {
+		return err
+	}
+	if err := a.db.Table("questionnaires").AutoMigrate(&types.Questionnaire{}); err != nil {
+		return err
+	}
+	if err := a.db.Table("questions").AutoMigrate(&types.Question{}); err != nil {
+		return err
+	}
+	if err := a.db.Table("options").AutoMigrate(&types.Option{}); err != nil {
+		return err
+	}
+	if err := a.db.Table("response").AutoMigrate(&types.Response{}); err != nil {
+		return err
+	}
 	return nil
 }
