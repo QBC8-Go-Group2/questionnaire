@@ -8,8 +8,6 @@ import (
 type Service interface {
 	CreateUser(ctx context.Context, user domain.User) (domain.UserDbID, error)
 	UpdateUser(ctx context.Context, user domain.User) (domain.UserDbID, error)
-	FindUserWithUserID(ctx context.Context, userId domain.UserID) (domain.User, error)
 	FindUserWithUserDbID(ctx context.Context, userDbId domain.UserDbID) (domain.User, error)
-	DeleteUserWithUserID(ctx context.Context, user domain.UserID) error
 	DeleteUserWithUserDbId(ctx context.Context, user domain.UserDbID) error
 }

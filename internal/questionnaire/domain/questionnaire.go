@@ -13,7 +13,7 @@ type (
 type Questionnaire struct {
 	ID              QuestionnaireDbID
 	QuestionnaireID QuestionnaireID
-	OwnerID         userDomian.UserID
+	OwnerID         userDomian.UserDbID
 	Title           string
 	Description     string
 	Duration        uint // minutes

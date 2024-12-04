@@ -24,17 +24,7 @@ func (s *service) UpdateUser(ctx context.Context, user domain.User) (domain.User
 	panic("implement me")
 }
 
-func (s *service) FindUserWithUserID(ctx context.Context, userId domain.UserID) (domain.User, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (s *service) FindUserWithUserDbID(ctx context.Context, userDbId domain.UserDbID) (domain.User, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s *service) DeleteUserWithUserID(ctx context.Context, user domain.UserID) error {
 	//TODO implement me
 	panic("implement me")
 }

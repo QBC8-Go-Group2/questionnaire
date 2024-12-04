@@ -11,7 +11,7 @@ func QuestionnaireDomain2Storage(q domain.Questionnaire) types.Questionnaire {
 	return types.Questionnaire{
 		ID:              uint(q.ID),
 		QuestionnaireID: string(q.QuestionnaireID),
-		OwnerID:         string(q.OwnerID),
+		OwnerID:         uint(q.OwnerID),
 		Title:           q.Title,
 		Description:     q.Description,
 		Duration:        q.Duration,
@@ -28,7 +28,7 @@ func QuestionnaireStorage2Domain(q *types.Questionnaire) domain.Questionnaire {
 	return domain.Questionnaire{
 		ID:              domain.QuestionnaireDbID(q.ID),
 		QuestionnaireID: domain.QuestionnaireID(q.QuestionnaireID),
-		OwnerID:         userDomian.UserID(q.OwnerID),
+		OwnerID:         userDomian.UserDbID(q.OwnerID),
 		Title:           q.Title,
 		Description:     q.Description,
 		Duration:        q.Duration,
