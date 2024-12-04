@@ -33,7 +33,7 @@ func TestToken(t *testing.T) {
 		return
 	}
 	var jwtGen jwt.JWTGenerator = &jwt.JWTService{}
-	jwtToken, err := jwtGen.GenerateJWT("admin", 123456)
+	jwtToken, err := jwtGen.GenerateJWT("admin", "example@wxample.com", 12346)
 	if err != nil {
 		log.Fatal(err)
 	}
