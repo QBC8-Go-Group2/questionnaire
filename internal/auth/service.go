@@ -6,28 +6,39 @@ import (
 	"encoding/base64"
 	"fmt"
 	mathrand "math/rand"
+	"net/mail"
 	"time"
 
 	"github.com/QBC8-Go-Group2/questionnaire/internal/auth/domain"
 	"github.com/QBC8-Go-Group2/questionnaire/internal/auth/port"
 	userDomain "github.com/QBC8-Go-Group2/questionnaire/internal/user/domain"
 	userPort "github.com/QBC8-Go-Group2/questionnaire/internal/user/port"
+	"github.com/QBC8-Go-Group2/questionnaire/pkg/adapter/email"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type service struct {
-	userService userPort.Service
-	otpStore    port.OTPStore
+	userService  userPort.Service
+	otpStore     port.OTPStore
+	emailService email.Service
 }
 
-func NewService(userService userPort.Service, otpStore port.OTPStore) port.Service {
+func NewService(userService userPort.Service, otpStore port.OTPStore, emailService email.Service) port.Service {
 	return &service{
-		userService: userService,
-		otpStore:    otpStore,
+		userService:  userService,
+		otpStore:     otpStore,
+		emailService: emailService,
 	}
 }
 
 func (s *service) Register(ctx context.Context, req domain.RegisterRequest) (string, error) {
+	// Validate email format
+	if _, err := mail.ParseAddress(req.Email); err != nil {
+		return "", fmt.Errorf("invalid email format")
+	}
+
+	// TODO: Validate National ID format
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", fmt.Errorf("failed to hash password: %w", err)
@@ -51,15 +62,15 @@ func (s *service) Register(ctx context.Context, req domain.RegisterRequest) (str
 	return userID, nil
 }
 
-func (s *service) Login(ctx context.Context, req domain.LoginRequest) (string, error) {
-	return "", fmt.Errorf("direct login disabled, use OTP flow")
-}
-
 func (s *service) InitiateOTP(ctx context.Context, email string) error {
 	otp := generateOTP()
-	fmt.Printf("Generated OTP: %s\n", otp)
 
-	err := s.otpStore.StoreOTP(ctx, domain.OTPData{
+	err := s.emailService.SendOTP(email, otp)
+	if err != nil {
+		return fmt.Errorf("failed to send OTP: %w", err)
+	}
+
+	err = s.otpStore.StoreOTP(ctx, domain.OTPData{
 		Email:     email,
 		OTP:       otp,
 		ExpiresAt: time.Now().Add(5 * time.Minute),
