@@ -77,8 +77,10 @@ func (h *authHandler) VerifyOTP(c *fiber.Ctx) error {
 }
 
 func RegisterAuthRoutes(app *fiber.App, authHandler *authHandler) {
-	auth := app.Group("/auth")
-	auth.Post("/register", authHandler.Register)
+	api := app.Group("/api/v1")
+	auth := api.Group("/auth")
+
+	auth.Post("/sign-up", authHandler.Register)
 	auth.Post("/otp/init", authHandler.InitiateOTP)
 	auth.Post("/otp/verify", authHandler.VerifyOTP)
 }
