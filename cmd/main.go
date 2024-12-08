@@ -1,6 +1,9 @@
 package main
 
 import (
+	"github.com/QBC8-Go-Group2/questionnaire/internal/questionnaire"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	recover2 "github.com/gofiber/fiber/v2/middleware/recover"
 	"log"
 
 	"github.com/QBC8-Go-Group2/questionnaire/api/handler/http"
@@ -30,8 +33,20 @@ func main() {
 	authService := auth.NewService(userService, otpStore, emailService)
 	authHandler := http.NewAuthHandler(authService)
 
-	app := fiber.New()
-	http.RegisterAuthRoutes(app, authHandler)
+	questionnaireRepo := storage.NewQuestionnaireRepo(application.DB())
+	questionnaireService := questionnaire.NewService(questionnaireRepo)
+	questionnaireHandler := http.NewQuestionnaireHandler(questionnaireService)
 
-	log.Fatal(app.Listen(":3000"))
+	fiberApp := fiber.New()
+	fiberApp.Use(logger.New())
+	fiberApp.Use(recover2.New())
+	fiberApp.Use(http.Limiter())
+
+	baseGroup := fiberApp.Group("/api/v1")
+
+	transaction := http.QuestionsTransaction(application.DB())
+	http.RegisterAuthRoutes(baseGroup, authHandler)
+	http.RegisterQuestionnaireRoutes(baseGroup, transaction, questionnaireHandler)
+
+	log.Fatal(fiberApp.Listen(":3000"))
 }

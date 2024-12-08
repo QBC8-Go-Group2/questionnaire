@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"github.com/QBC8-Go-Group2/questionnaire/internal/question/domain"
+	"github.com/QBC8-Go-Group2/questionnaire/internal/question/port"
 	"github.com/QBC8-Go-Group2/questionnaire/pkg/adapter/storage/mapper"
 	"github.com/QBC8-Go-Group2/questionnaire/pkg/adapter/storage/types"
 	"gorm.io/gorm"
@@ -10,6 +11,12 @@ import (
 
 type questionRepo struct {
 	db *gorm.DB
+}
+
+func NewQuestionRepo(db *gorm.DB) port.Repo {
+	return &questionRepo{
+		db: db,
+	}
 }
 
 func (q *questionRepo) Create(ctx context.Context, question domain.Question) (domain.QuestionDbID, error) {

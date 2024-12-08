@@ -76,10 +76,7 @@ func (h *authHandler) VerifyOTP(c *fiber.Ctx) error {
 	})
 }
 
-func RegisterAuthRoutes(app *fiber.App, authHandler *authHandler) {
-
-	app.Use(limiter())
-
+func RegisterAuthRoutes(app fiber.Router, authHandler *authHandler) {
 	auth := app.Group("/auth")
 	auth.Post("/register", authHandler.Register)
 	auth.Post("/otp/init", authHandler.InitiateOTP)
