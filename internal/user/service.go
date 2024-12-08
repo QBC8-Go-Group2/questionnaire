@@ -31,6 +31,10 @@ func (s *service) FindUserWithUserDbID(ctx context.Context, userDbId domain.User
 	return s.repo.FindWithUserDbID(ctx, userDbId)
 }
 
+func (s *service) FindUserWithEmail(ctx context.Context, email string) (domain.User, error) {
+	return s.repo.FindWithEmail(ctx, email)
+}
+
 func (s *service) DeleteUserWithUserID(ctx context.Context, user domain.UserID) error {
 	return s.repo.DeleteWithUserID(ctx, user)
 }

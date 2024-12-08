@@ -3,15 +3,29 @@ package domain
 import "time"
 
 type (
-	LoginRequest struct {
+	// First step of registration
+	InitiateRegisterRequest struct {
+		Email string
+	}
+
+	// Second step of registration after OTP verification
+	CompleteRegisterRequest struct {
+		Email    string
+		OTP      string
+		Password string
+		NatId    string
+	}
+
+	// First step of login
+	InitiateLoginRequest struct {
 		Email    string
 		Password string
 	}
 
-	RegisterRequest struct {
-		Email    string
-		Password string
-		NatId    string
+	// Second step of login
+	CompleteLoginRequest struct {
+		Email string
+		OTP   string
 	}
 
 	OTPRequest struct {
@@ -23,5 +37,13 @@ type (
 		Email     string
 		OTP       string
 		ExpiresAt time.Time
+		Purpose   OTPPurpose // login, registration
 	}
+
+	OTPPurpose string
+)
+
+const (
+	OTPPurposeLogin        OTPPurpose = "login"
+	OTPPurposeRegistration OTPPurpose = "registration"
 )
