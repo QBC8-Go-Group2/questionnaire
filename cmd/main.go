@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/QBC8-Go-Group2/questionnaire/internal/questionnaire"
 	"log"
 	"path/filepath"
 
@@ -19,11 +20,9 @@ import (
 )
 
 func main() {
-	// Load configuration
 	cfg := config.MustReadConfig("config.json")
 	application := app.MustNewApp(cfg)
 
-	// Initialize email service
 	emailService := email.NewService(email.Config{
 		Host:     cfg.Email.Host,
 		Port:     cfg.Email.Port,
@@ -80,6 +79,14 @@ func main() {
 
 	// Auth routes
 	http.RegisterAuthRoutes(app, authHandler)
+	questionnaireRepo := storage.NewQuestionnaireRepo(application.DB())
+	questionnaireService := questionnaire.NewService(questionnaireRepo)
+	questionnaireHandler := http.NewQuestionnaireHandler(questionnaireService)
+
+	fiberApp := fiber.New()
+	fiberApp.Use(logger.New())
+	fiberApp.Use(recover.New())
+	fiberApp.Use(http.Limiter())
 
 	// Protected routes using the middleware from middlewares.go
 	protected := api.Group("/protected")
@@ -110,4 +117,11 @@ func main() {
 	if err := app.Listen(port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
+	baseGroup := fiberApp.Group("/api/v1")
+
+	transaction := http.QuestionsTransaction(application.DB())
+	http.RegisterAuthRoutes(fiberApp, authHandler)
+	http.RegisterQuestionnaireRoutes(baseGroup, transaction, questionnaireHandler)
+
+	log.Fatal(fiberApp.Listen(":3000"))
 }

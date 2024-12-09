@@ -94,8 +94,7 @@ func (h *authHandler) CompleteLogin(c *fiber.Ctx) error {
 	})
 }
 
-func RegisterAuthRoutes(app *fiber.App, authHandler *authHandler) {
-	api := app.Group("/api/v1")
+func RegisterAuthRoutes(api fiber.Router, authHandler *authHandler) {
 	auth := api.Group("/auth")
 
 	// Registration endpoints

@@ -15,8 +15,7 @@ func NewService(repo port.Repo) port.Service {
 }
 
 func (s *service) CreateQuestionnaire(ctx context.Context, questionnaire domain.Questionnaire) (domain.QuestionnaireDbID, error) {
-	//TODO implement me
-	panic("implement me")
+	return s.repo.Create(ctx, questionnaire)
 }
 
 func (s *service) UpdateQuestionnaire(ctx context.Context, questionnaire domain.Questionnaire) (domain.QuestionnaireID, error) {
@@ -25,8 +24,11 @@ func (s *service) UpdateQuestionnaire(ctx context.Context, questionnaire domain.
 }
 
 func (s *service) FindQuestionnaireWithQuestionnaireID(ctx context.Context, questionnaireId domain.QuestionnaireID) (domain.Questionnaire, error) {
-	//TODO implement me
-	panic("implement me")
+	id, err := s.repo.FindWithQuestionnaireID(ctx, questionnaireId)
+	if err != nil {
+		return domain.Questionnaire{}, err
+	}
+	return id, nil
 }
 
 func (s *service) FindQuestionnaireWithQuestionnaireDbID(ctx context.Context, questionnaireId domain.QuestionnaireDbID) (domain.Questionnaire, error) {

@@ -33,10 +33,10 @@ func NewApp(config config.Config) (App, error) {
 	if err := a.setDB(); err != nil {
 		return nil, err
 	}
-
 	if err := a.setRedis(); err != nil {
 		return nil, err
 	}
+
 	if err := a.migrationDB(); err != nil {
 		return nil, err
 	}

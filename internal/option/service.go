@@ -15,8 +15,7 @@ func NewService(repo port.Repo) port.Service {
 }
 
 func (s *service) CreateOption(ctx context.Context, option domain.Option) (domain.OptionID, error) {
-	//TODO implement me
-	panic("implement me")
+	return s.repo.Create(ctx, option)
 }
 
 func (s *service) UpdateOption(ctx context.Context, option domain.Option) (domain.OptionID, error) {
