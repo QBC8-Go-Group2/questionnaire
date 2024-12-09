@@ -15,21 +15,25 @@ func NewService(repo port.Repo) port.Service {
 }
 
 func (s *service) CreateUser(ctx context.Context, user domain.User) (domain.UserDbID, error) {
-	//TODO implement me
-	panic("implement me")
+	return s.repo.Create(ctx, user)
 }
 
 func (s *service) UpdateUser(ctx context.Context, user domain.User) (domain.UserDbID, error) {
-	//TODO implement me
-	panic("implement me")
+	return s.repo.Update(ctx, user)
 }
 
 func (s *service) FindUserWithUserDbID(ctx context.Context, userDbId domain.UserDbID) (domain.User, error) {
-	//TODO implement me
-	panic("implement me")
+	return s.repo.FindWithUserDbID(ctx, userDbId)
+}
+
+func (s *service) FindUserWithEmail(ctx context.Context, email string) (domain.User, error) {
+	return s.repo.FindWithEmail(ctx, email)
+}
+
+func (s *service) DeleteUserWithUserID(ctx context.Context, user domain.UserID) error {
+	return s.repo.DeleteWithUserID(ctx, user)
 }
 
 func (s *service) DeleteUserWithUserDbId(ctx context.Context, user domain.UserDbID) error {
-	//TODO implement me
-	panic("implement me")
+	return s.repo.DeleteWithUserDbId(ctx, user)
 }

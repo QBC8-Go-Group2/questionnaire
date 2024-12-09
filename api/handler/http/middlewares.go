@@ -9,12 +9,16 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"io/ioutil"
 	"time"
+  "log"
 )
 
 // Global variable for the public key
 var publicKey *rsa.PublicKey
 
 // Context key types
+
+var publicKey *rsa.PublicKey
+
 type contextKey string
 
 const (
@@ -45,6 +49,10 @@ func LoadPublicKey(path string) (*rsa.PublicKey, error) {
 		return nil, fmt.Errorf("not an RSA public key")
 	}
 
+
+	// Set the package-level publicKey variable
+	publicKey = rsaPubKey
+
 	return rsaPubKey, nil
 }
 
@@ -53,13 +61,14 @@ func JWTMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Get the Authorization header
 		authHeader := c.Get("Authorization")
+		log.Println("Starting JWT middleware")
+
 		if authHeader == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "Authorization header missing",
 			})
 		}
 
-		// Extract the token (Assumes "Bearer <token>" format)
 		if len(authHeader) < 7 || authHeader[:7] != "Bearer " {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "Invalid authorization header format",
@@ -69,6 +78,7 @@ func JWTMiddleware() fiber.Handler {
 
 		// Parse and verify the JWT
 		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+
 			// Ensure the signing method is as expected
 			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -76,7 +86,13 @@ func JWTMiddleware() fiber.Handler {
 			return publicKey, nil
 		})
 
-		// Extract claims and validate expiration
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Invalid token",
+			})
+		}
+
+		// Extract claims
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -103,18 +119,19 @@ func JWTMiddleware() fiber.Handler {
 				"error": "Invalid token",
 			})
 		}
+		// Store values in context
+		if email, ok := claims["Email"].(string); ok {
+			c.Locals(EmailKey, email)
+		}
+		if userId, ok := claims["id"].(float64); ok {
+			c.Locals(UserIDKey, fmt.Sprintf("%.0f", userId))
+		}
+		if role, ok := claims["role"].(string); ok {
+			c.Locals(RoleKey, role)
+		}
 
-		// Extract required claims (email, role, userId)
-		email, _ := claims["Email"].(string)
-		userId, _ := claims["id"].(string)
-		role, _ := claims["role"].(string)
+		log.Println("JWT middleware completed successfully")
 
-		// Store values in context using typed keys
-		c.Locals(UserIDKey, userId)
-		c.Locals(EmailKey, email)
-		c.Locals(RoleKey, role)
-
-		// Proceed to the next handler
 		return c.Next()
 	}
 }
