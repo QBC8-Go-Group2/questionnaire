@@ -11,13 +11,13 @@ import (
 )
 
 type JWTGenerator interface {
-	GenerateJWT(role string, email string, userId uint) (string, error)
+	GenerateJWT(role string, email string, userId string) (string, error)
 }
 
 type JWTService struct{}
 
 // Generate a JWT using the private key
-func (j *JWTService) GenerateJWT(role string, email string, userId uint) (string, error) {
+func (j *JWTService) GenerateJWT(role string, email string, userId string) (string, error) {
 	// Read the file
 	privateKeyData, err := os.ReadFile("Private_key.pem")
 	if err != nil {

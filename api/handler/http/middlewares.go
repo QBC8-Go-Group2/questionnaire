@@ -5,14 +5,17 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
-	"log"
-
-	"time"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"io/ioutil"
+	"time"
+  "log"
 )
+
+// Global variable for the public key
+var publicKey *rsa.PublicKey
+
+// Context key types
 
 var publicKey *rsa.PublicKey
 
@@ -46,6 +49,7 @@ func LoadPublicKey(path string) (*rsa.PublicKey, error) {
 		return nil, fmt.Errorf("not an RSA public key")
 	}
 
+
 	// Set the package-level publicKey variable
 	publicKey = rsaPubKey
 
@@ -55,10 +59,9 @@ func LoadPublicKey(path string) (*rsa.PublicKey, error) {
 // JWTMiddleware is the middleware to validate JWTs and pass claims to context
 func JWTMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		log.Println("Starting JWT middleware")
-
 		// Get the Authorization header
 		authHeader := c.Get("Authorization")
+		log.Println("Starting JWT middleware")
 
 		if authHeader == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -66,7 +69,6 @@ func JWTMiddleware() fiber.Handler {
 			})
 		}
 
-		// Extract the token
 		if len(authHeader) < 7 || authHeader[:7] != "Bearer " {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "Invalid authorization header format",
