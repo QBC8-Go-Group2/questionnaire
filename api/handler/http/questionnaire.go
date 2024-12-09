@@ -58,7 +58,7 @@ func (h *QuestionnaireHandler) createQuestionnaire() fiber.Handler {
 				"message": "invalid userId",
 			})
 		}
-		email := c.Get("email")
+		email := c.Get("Email")
 
 		qID, err := domain.CreateQuestionnaireID(email + time.Now().String())
 		if err != nil {
