@@ -7,7 +7,11 @@ import (
 )
 
 type Service interface {
-	Register(ctx context.Context, req domain.RegisterRequest) (string, error)
-	InitiateOTP(ctx context.Context, email string) error
-	VerifyOTP(ctx context.Context, req domain.OTPRequest) (string, error)
+	// Registration endpoints
+	InitiateRegister(ctx context.Context, req domain.InitiateRegisterRequest) error
+	CompleteRegister(ctx context.Context, req domain.CompleteRegisterRequest) error // Changed return type to just error
+
+	// Login endpoints
+	InitiateLogin(ctx context.Context, req domain.InitiateLoginRequest) error
+	CompleteLogin(ctx context.Context, req domain.CompleteLoginRequest) (string, error)
 }

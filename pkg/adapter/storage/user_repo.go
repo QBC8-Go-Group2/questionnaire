@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+
 	"github.com/QBC8-Go-Group2/questionnaire/internal/user/domain"
 	"github.com/QBC8-Go-Group2/questionnaire/internal/user/port"
 	"github.com/QBC8-Go-Group2/questionnaire/pkg/adapter/storage/mapper"
@@ -36,6 +37,19 @@ func (u *userRepo) FindWithUserDbID(ctx context.Context, userDbId domain.UserDbI
 		return domain.User{}, err
 	}
 	return mapper.UserStorage2Domain(user), nil
+}
+
+func (u *userRepo) FindWithEmail(ctx context.Context, email string) (domain.User, error) {
+	var user types.User
+	err := u.db.Table("users").WithContext(ctx).Where("email = ?", email).First(&user).Error
+	if err != nil {
+		return domain.User{}, err
+	}
+	return mapper.UserStorage2Domain(user), nil
+}
+
+func (u *userRepo) DeleteWithUserID(ctx context.Context, user domain.UserID) error {
+	return u.db.Table("users").WithContext(ctx).Delete(&types.User{}, "user_id = ?", user).Error
 }
 
 func (u *userRepo) DeleteWithUserDbId(ctx context.Context, user domain.UserDbID) error {
