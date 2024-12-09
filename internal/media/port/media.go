@@ -9,5 +9,6 @@ import (
 type Repo interface {
 	Create(ctx context.Context, media domain.Media) (domain.MediaID, error)
 	FindByID(ctx context.Context, id domain.MediaID) (domain.Media, error)
+	FindByUUID(ctx context.Context, uuid domain.MediaUUID) (domain.Media, error)
 	FindByUserID(ctx context.Context, userID uint) ([]domain.Media, error)
 }

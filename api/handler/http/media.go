@@ -1,6 +1,7 @@
 package http
 
 import (
+	"path/filepath"
 	"strconv"
 
 	"github.com/QBC8-Go-Group2/questionnaire/internal/media/domain"
@@ -85,10 +86,50 @@ func (h *mediaHandler) GetByID(c *fiber.Ctx) error {
 	})
 }
 
+func (h *mediaHandler) Download(c *fiber.Ctx) error {
+	uuid := c.Params("uuid")
+	if uuid == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Missing media UUID",
+		})
+	}
+
+	userIDInterface := c.Locals(UserIDKey)
+	if userIDInterface == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "User not authenticated",
+		})
+	}
+
+	userIDStr, ok := userIDInterface.(string)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Invalid user ID format",
+		})
+	}
+
+	userID, err := strconv.ParseUint(userIDStr, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Invalid user ID format",
+		})
+	}
+
+	// Verify access and get media info
+	media, err := h.mediaService.VerifyFileAccess(c.Context(), domain.MediaUUID(uuid), uint(userID))
+	if err != nil {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": "Access denied",
+		})
+	}
+
+	return c.Download(string(media.Path), filepath.Base(string(media.Path)))
+}
+
 func RegisterMediaRoutes(app *fiber.App, mediaHandler *mediaHandler) {
 	api := app.Group("/api/v1")
 	media := api.Group("/media")
 	media.Use(JWTMiddleware())
 	media.Post("/upload", mediaHandler.Upload)
-	media.Get("/:id", mediaHandler.GetByID)
+	media.Get("/download/:uuid", mediaHandler.Download)
 }

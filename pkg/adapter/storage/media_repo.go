@@ -43,3 +43,9 @@ func (r *mediaRepo) FindByUserID(ctx context.Context, userID uint) ([]domain.Med
 	}
 	return result, nil
 }
+
+func (r *mediaRepo) FindByUUID(ctx context.Context, uuid domain.MediaUUID) (domain.Media, error) {
+	var media types.Media
+	err := r.db.WithContext(ctx).Where("uuid = ?", uuid).First(&media).Error
+	return mapper.MediaStorage2Domain(media), err
+}
