@@ -3,6 +3,7 @@ package http
 import (
 	"strconv"
 
+	"github.com/QBC8-Go-Group2/questionnaire/internal/media/domain"
 	"github.com/QBC8-Go-Group2/questionnaire/internal/media/port"
 	"github.com/gofiber/fiber/v2"
 )
@@ -16,7 +17,6 @@ func NewMediaHandler(mediaService port.Service) *mediaHandler {
 }
 
 func (h *mediaHandler) Upload(c *fiber.Ctx) error {
-	// Get user ID using the correct context key
 	userIDInterface := c.Locals(UserIDKey)
 	if userIDInterface == nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -24,7 +24,6 @@ func (h *mediaHandler) Upload(c *fiber.Ctx) error {
 		})
 	}
 
-	// Convert the user ID to string first (as stored in middleware)
 	userIDStr, ok := userIDInterface.(string)
 	if !ok {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -32,7 +31,6 @@ func (h *mediaHandler) Upload(c *fiber.Ctx) error {
 		})
 	}
 
-	// Convert string to uint
 	userID, err := strconv.ParseUint(userIDStr, 10, 64)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -40,7 +38,6 @@ func (h *mediaHandler) Upload(c *fiber.Ctx) error {
 		})
 	}
 
-	// Get uploaded file
 	file, err := c.FormFile("file")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -48,8 +45,7 @@ func (h *mediaHandler) Upload(c *fiber.Ctx) error {
 		})
 	}
 
-	// Upload file
-	mediaID, err := h.mediaService.Upload(c.Context(), uint(userID), file)
+	media, err := h.mediaService.Upload(c.Context(), uint(userID), file)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
@@ -57,7 +53,35 @@ func (h *mediaHandler) Upload(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"media_id": mediaID,
+		"media_id":   media.ID,
+		"media_uuid": media.UUID,
+		"name":       media.Name,
+		"size":       media.Size,
+		"type":       media.Type,
+	})
+}
+
+func (h *mediaHandler) GetByID(c *fiber.Ctx) error {
+	id, err := strconv.ParseUint(c.Params("id"), 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid media ID",
+		})
+	}
+
+	media, err := h.mediaService.GetByID(c.Context(), domain.MediaID(id))
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Media not found",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"media_id":   media.ID,
+		"media_uuid": media.UUID,
+		"name":       media.Name,
+		"type":       media.Type,
+		"size":       media.Size,
 	})
 }
 
@@ -66,4 +90,5 @@ func RegisterMediaRoutes(app *fiber.App, mediaHandler *mediaHandler) {
 	media := api.Group("/media")
 	media.Use(JWTMiddleware())
 	media.Post("/upload", mediaHandler.Upload)
+	media.Get("/:id", mediaHandler.GetByID)
 }

@@ -8,6 +8,7 @@ import (
 func MediaStorage2Domain(media types.Media) domain.Media {
 	return domain.Media{
 		ID:        domain.MediaID(media.ID),
+		UUID:      domain.MediaUUID(media.UUID),
 		UserID:    media.UserID,
 		Path:      media.Path,
 		Type:      domain.MediaType(media.Type),
@@ -20,6 +21,7 @@ func MediaStorage2Domain(media types.Media) domain.Media {
 func MediaDomain2Storage(media domain.Media) types.Media {
 	return types.Media{
 		ID:        uint(media.ID),
+		UUID:      string(media.UUID),
 		UserID:    media.UserID,
 		Path:      media.Path,
 		Type:      string(media.Type),

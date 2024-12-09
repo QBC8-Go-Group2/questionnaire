@@ -8,7 +8,7 @@ import (
 )
 
 type Service interface {
-	Upload(ctx context.Context, userID uint, file *multipart.FileHeader) (domain.MediaID, error)
+	Upload(ctx context.Context, userID uint, file *multipart.FileHeader) (domain.Media, error)
 	GetByID(ctx context.Context, id domain.MediaID) (domain.Media, error)
 	GetByUserID(ctx context.Context, userID uint) ([]domain.Media, error)
 }
