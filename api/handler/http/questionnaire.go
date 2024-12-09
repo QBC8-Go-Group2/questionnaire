@@ -95,7 +95,9 @@ func (h *QuestionnaireHandler) createQuestions() fiber.Handler {
 
 		_, err := h.questionnaireService.FindQuestionnaireWithQuestionnaireID(c.UserContext(), domain.QuestionnaireID(questionsReq.QuestionnaireID))
 		if err != nil {
-			return err
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "questionnaire doesn't exists",
+			})
 		}
 
 		db := context.GetDB(c.UserContext())
