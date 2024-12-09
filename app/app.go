@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/QBC8-Go-Group2/questionnaire/config"
+	"github.com/QBC8-Go-Group2/questionnaire/pkg/adapter/storage/types"
 	"github.com/QBC8-Go-Group2/questionnaire/pkg/mysql"
 	redispkg "github.com/QBC8-Go-Group2/questionnaire/pkg/redis"
 	"github.com/go-redis/redis/v8"
@@ -27,13 +28,16 @@ func (a app) Redis() *redis.Client {
 }
 
 func NewApp(config config.Config) (App, error) {
-	a := &app{config: config}
+	a := app{config: config}
 
 	if err := a.setDB(); err != nil {
 		return nil, err
 	}
 
 	if err := a.setRedis(); err != nil {
+		return nil, err
+	}
+	if err := a.migrationDB(); err != nil {
 		return nil, err
 	}
 
@@ -49,13 +53,15 @@ func MustNewApp(config config.Config) App {
 }
 
 func (a *app) setDB() error {
-	db, err := mysql.NewMySqlGormConnection(mysql.DBConnectionConfig{
-		Host:   a.config.DB.Host,
-		Port:   a.config.DB.Port,
-		User:   a.config.DB.User,
-		Pass:   a.config.DB.Password,
-		Dbname: a.config.DB.Database,
+	var dbCfg = a.config.DB
+	var db, err = mysql.NewMySqlGormConnection(mysql.DBConnectionConfig{
+		Host:   dbCfg.Host,
+		Port:   dbCfg.Port,
+		User:   dbCfg.User,
+		Pass:   dbCfg.Password,
+		Dbname: dbCfg.Database,
 	})
+
 	if err != nil {
 		return err
 	}
@@ -72,5 +78,24 @@ func (a *app) setRedis() error {
 		return err
 	}
 	a.redis = client
+	return nil
+}
+
+func (a *app) migrationDB() error {
+	if err := a.db.Table("users").AutoMigrate(&types.User{}); err != nil {
+		return err
+	}
+	if err := a.db.Table("questionnaires").AutoMigrate(&types.Questionnaire{}); err != nil {
+		return err
+	}
+	if err := a.db.Table("questions").AutoMigrate(&types.Question{}); err != nil {
+		return err
+	}
+	if err := a.db.Table("options").AutoMigrate(&types.Option{}); err != nil {
+		return err
+	}
+	if err := a.db.Table("response").AutoMigrate(&types.Response{}); err != nil {
+		return err
+	}
 	return nil
 }

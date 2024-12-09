@@ -27,16 +27,7 @@ func (u *userRepo) Create(ctx context.Context, userDomain domain.User) (domain.U
 
 func (u *userRepo) Update(ctx context.Context, user domain.User) (domain.UserDbID, error) {
 	userStorage := mapper.UserDomain2Storage(user)
-	return domain.UserDbID(userStorage.ID), u.db.Table("users").WithContext(ctx).Updates(&userStorage).Error
-}
-
-func (u *userRepo) FindWithUserID(ctx context.Context, userId domain.UserID) (domain.User, error) {
-	var user types.User
-	err := u.db.Table("users").WithContext(ctx).Where("user_id = ?", userId).First(&user).Error
-	if err != nil {
-		return domain.User{}, err
-	}
-	return mapper.UserStorage2Domain(user), nil
+	return domain.UserDbID(userStorage.ID), u.db.Table("users").WithContext(ctx).Where("id = ?", userStorage.ID).Updates(&userStorage).Error
 }
 
 func (u *userRepo) FindWithUserDbID(ctx context.Context, userDbId domain.UserDbID) (domain.User, error) {

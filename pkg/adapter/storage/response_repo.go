@@ -31,7 +31,7 @@ func (r *responseRepo) Update(ctx context.Context, response domain.Response) err
 
 func (r *responseRepo) FindById(ctx context.Context, id domain.ResponseID) (domain.Response, error) {
 	var response types.Response
-	err := r.db.Table("responses").Where("id = ?", id).First(&response).Error
+	err := r.db.Table("responses").WithContext(ctx).Where("id = ?", id).First(&response).Error
 	if err != nil {
 		return domain.Response{}, err
 	}
@@ -39,5 +39,5 @@ func (r *responseRepo) FindById(ctx context.Context, id domain.ResponseID) (doma
 }
 
 func (r *responseRepo) Delete(ctx context.Context, response domain.Response) error {
-	return r.db.Table("responses").Where("id = ?", response.ID).Delete(&response).Error
+	return r.db.Table("responses").WithContext(ctx).Where("id = ?", response.ID).Delete(&response).Error
 }

@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-
 	"github.com/QBC8-Go-Group2/questionnaire/internal/user/domain"
 	"github.com/QBC8-Go-Group2/questionnaire/internal/user/port"
 )
@@ -21,10 +20,6 @@ func (s *service) CreateUser(ctx context.Context, user domain.User) (domain.User
 
 func (s *service) UpdateUser(ctx context.Context, user domain.User) (domain.UserDbID, error) {
 	return s.repo.Update(ctx, user)
-}
-
-func (s *service) FindUserWithUserID(ctx context.Context, userId domain.UserID) (domain.User, error) {
-	return s.repo.FindWithUserID(ctx, userId)
 }
 
 func (s *service) FindUserWithUserDbID(ctx context.Context, userDbId domain.UserDbID) (domain.User, error) {

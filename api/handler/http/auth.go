@@ -116,4 +116,5 @@ func RegisterAuthRoutes(app *fiber.App, authHandler *authHandler) {
 			"role":    c.Locals(RoleKey),
 		})
 	})
+
 }
