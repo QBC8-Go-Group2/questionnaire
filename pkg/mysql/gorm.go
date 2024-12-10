@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"fmt"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -17,12 +18,12 @@ type DBConnectionConfig struct {
 
 func (c DBConnectionConfig) MySqlDSN() string {
 	return fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local",
+		"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		c.User, c.Pass, c.Host, c.Port, c.Dbname)
 }
 
 func NewMySqlGormConnection(config DBConnectionConfig) (*gorm.DB, error) {
 	return gorm.Open(mysql.Open(config.MySqlDSN()), &gorm.Config{
-		Logger: logger.Discard,
+		Logger: logger.Default.LogMode(logger.Silent),
 	})
 }

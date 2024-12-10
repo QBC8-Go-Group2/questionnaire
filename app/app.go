@@ -82,19 +82,22 @@ func (a *app) setRedis() error {
 }
 
 func (a *app) migrationDB() error {
-	if err := a.db.Table("users").AutoMigrate(&types.User{}); err != nil {
+	if err := a.db.AutoMigrate(&types.User{}); err != nil {
 		return err
 	}
-	if err := a.db.Table("questionnaires").AutoMigrate(&types.Questionnaire{}); err != nil {
+	if err := a.db.AutoMigrate(&types.Questionnaire{}); err != nil {
 		return err
 	}
-	if err := a.db.Table("questions").AutoMigrate(&types.Question{}); err != nil {
+	if err := a.db.AutoMigrate(&types.Question{}); err != nil {
 		return err
 	}
-	if err := a.db.Table("options").AutoMigrate(&types.Option{}); err != nil {
+	if err := a.db.AutoMigrate(&types.Option{}); err != nil {
 		return err
 	}
-	if err := a.db.Table("response").AutoMigrate(&types.Response{}); err != nil {
+	if err := a.db.AutoMigrate(&types.Response{}); err != nil {
+		return err
+	}
+	if err := a.db.AutoMigrate(&types.Media{}); err != nil {
 		return err
 	}
 	return nil

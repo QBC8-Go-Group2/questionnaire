@@ -1,3 +1,9 @@
+version: '3.8'
+
+networks:
+  questionnaire-network:
+    driver: bridge
+
 services:
   app:
     build: .
@@ -12,7 +18,8 @@ services:
     volumes:
       - ./config.json:/root/config.json
       - app_uploads:/root/pkg/data/uploads
-    restart: unless-stopped
+    networks:
+      - questionnaire-network
 
   mysql:
     image: mysql:latest
@@ -25,21 +32,22 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysql", "-uroot", "-ppassword", "-e", "SELECT 1"]
       interval: 5s
       timeout: 5s
-      retries: 5
-    restart: unless-stopped
+      retries: 10
+    networks:
+      - questionnaire-network
 
   redis:
     image: redis:latest
     container_name: questionnaire-redis
     ports:
       - "6379:6379"
-    command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis_data:/data
-    restart: unless-stopped
+    networks:
+      - questionnaire-network
 
 volumes:
   mysql_data:
