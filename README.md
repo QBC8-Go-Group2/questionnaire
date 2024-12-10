@@ -79,18 +79,12 @@ sequenceDiagram
 #### Questionnaire Management Flow
 ```mermaid
 sequenceDiagram
-    participant User
-    participant AuthMiddleware
-    participant QuestionnaireService
-    participant Database
-    participant MediaService
-
-    User->>AuthMiddleware: Create Questionnaire Request
-    AuthMiddleware->>QuestionnaireService: Validated Request
-    QuestionnaireService->>Database: Store Questionnaire
+    User->>AuthMiddleware: Create Request
+    AuthMiddleware->>QuestionnaireService: Validate
+    QuestionnaireService->>Database: Store
     User->>MediaService: Upload Media
-    MediaService->>Database: Store Media Reference
-    QuestionnaireService-->>User: Return Questionnaire ID
+    MediaService->>Database: Store Reference
+    QuestionnaireService-->>User: Return ID
 ```
 
 #### Media Handling Flow
