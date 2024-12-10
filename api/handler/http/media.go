@@ -1,6 +1,7 @@
 package http
 
 import (
+	"log"
 	"path/filepath"
 	"strconv"
 
@@ -18,6 +19,8 @@ func NewMediaHandler(mediaService port.Service) *mediaHandler {
 }
 
 func (h *mediaHandler) Upload(c *fiber.Ctx) error {
+	log.Printf("User ID from context: %v", c.Locals(UserIDKey))
+
 	userIDInterface := c.Locals(UserIDKey)
 	if userIDInterface == nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -94,20 +97,8 @@ func (h *mediaHandler) Download(c *fiber.Ctx) error {
 		})
 	}
 
-	userIDInterface := c.Locals(UserIDKey)
-	if userIDInterface == nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "User not authenticated",
-		})
-	}
-
-	userIDStr, ok := userIDInterface.(string)
-	if !ok {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Invalid user ID format",
-		})
-	}
-
+	// Still get the userID from JWT to ensure user is logged in
+	userIDStr := c.Locals(UserIDKey).(string)
 	userID, err := strconv.ParseUint(userIDStr, 10, 64)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -115,19 +106,17 @@ func (h *mediaHandler) Download(c *fiber.Ctx) error {
 		})
 	}
 
-	// Verify access and get media info
 	media, err := h.mediaService.VerifyFileAccess(c.Context(), domain.MediaUUID(uuid), uint(userID))
 	if err != nil {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"error": "Access denied",
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Media not found",
 		})
 	}
 
 	return c.Download(string(media.Path), filepath.Base(string(media.Path)))
 }
 
-func RegisterMediaRoutes(app *fiber.App, mediaHandler *mediaHandler) {
-	api := app.Group("/api/v1")
+func RegisterMediaRoutes(api fiber.Router, mediaHandler *mediaHandler) {
 	media := api.Group("/media")
 	media.Use(JWTMiddleware())
 	media.Post("/upload", mediaHandler.Upload)

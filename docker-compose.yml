@@ -1,5 +1,19 @@
-
 services:
+  app:
+    build: .
+    container_name: questionnaire-app
+    ports:
+      - "3000:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./config.json:/root/config.json
+      - app_uploads:/root/pkg/data/uploads
+    restart: unless-stopped
+
   mysql:
     image: mysql:latest
     container_name: questionnaire-db
@@ -7,8 +21,15 @@ services:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: questionnaire
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   redis:
     image: redis:latest
@@ -16,6 +37,11 @@ services:
     ports:
       - "6379:6379"
     command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
 
 volumes:
   mysql_data:
+  redis_data:
+  app_uploads:

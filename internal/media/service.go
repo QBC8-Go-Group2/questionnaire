@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"os"
 	"path/filepath"
@@ -84,14 +85,13 @@ func (s *service) GetByUUID(ctx context.Context, uuid domain.MediaUUID) (domain.
 func (s *service) VerifyFileAccess(ctx context.Context, mediaUUID domain.MediaUUID, userID uint) (domain.Media, error) {
 	media, err := s.repo.FindByUUID(ctx, mediaUUID)
 	if err != nil {
+		log.Printf("Media not found - UUID: %s, Error: %v", mediaUUID, err)
 		return domain.Media{}, fmt.Errorf("media not found: %w", err)
 	}
 
-	// For now, only check if the user owns the file
-	// TODO: Add questionnaire permission check when implementing questionnaire service
-	if media.UserID != userID {
-		return domain.Media{}, fmt.Errorf("unauthorized access to media")
-	}
+	log.Printf("Media access request - UUID: %s, RequestingUserID: %d, OwnerUserID: %d",
+		mediaUUID, userID, media.UserID)
 
+	// For Phase 1, allow access
 	return media, nil
 }

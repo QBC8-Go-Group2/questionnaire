@@ -2,6 +2,7 @@ package mapper
 
 import (
 	"fmt"
+
 	"github.com/QBC8-Go-Group2/questionnaire/internal/user/domain"
 	"github.com/QBC8-Go-Group2/questionnaire/pkg/adapter/storage/types"
 )
@@ -17,10 +18,12 @@ func UserStorage2Domain(user types.User) domain.User {
 		Role:      domain.RoleType(user.Role),
 	}
 }
+
 func UserDomain2Storage(user domain.User) types.User {
 	return types.User{
 		ID:        uint(user.ID),
 		CreatedAt: user.CreatedAT,
+		UserID:    string(user.UserID), // Add this line to map UserID
 		Email:     user.Email,
 		Password:  user.Password,
 		NatID:     user.NatId,

@@ -5,29 +5,22 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"io/ioutil"
-	"time"
-  "log"
 )
 
-// Global variable for the public key
 var publicKey *rsa.PublicKey
-
-// Context key types
-
-var publicKey *rsa.PublicKey
-
-type contextKey string
 
 const (
-	EmailKey  contextKey = "Email"
-	RoleKey   contextKey = "role"
-	UserIDKey contextKey = "id"
+	EmailKey  = "email"
+	RoleKey   = "role"
+	UserIDKey = "id"
 )
 
-// LoadPublicKey loads the RSA public key from a .pem file
 func LoadPublicKey(path string) (*rsa.PublicKey, error) {
 	keyData, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -49,19 +42,14 @@ func LoadPublicKey(path string) (*rsa.PublicKey, error) {
 		return nil, fmt.Errorf("not an RSA public key")
 	}
 
-
-	// Set the package-level publicKey variable
 	publicKey = rsaPubKey
-
 	return rsaPubKey, nil
 }
 
-// JWTMiddleware is the middleware to validate JWTs and pass claims to context
 func JWTMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// Get the Authorization header
 		authHeader := c.Get("Authorization")
-		log.Println("Starting JWT middleware")
+		log.Printf("Processing JWT middleware. Auth header present: %v", authHeader != "")
 
 		if authHeader == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -76,10 +64,8 @@ func JWTMiddleware() fiber.Handler {
 		}
 		tokenStr := authHeader[7:]
 
-		// Parse and verify the JWT
+		// Parse and validate the token
 		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-
-			// Ensure the signing method is as expected
 			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
@@ -87,50 +73,53 @@ func JWTMiddleware() fiber.Handler {
 		})
 
 		if err != nil {
+			log.Printf("Token parsing error: %v", err)
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "Invalid token",
 			})
 		}
 
-		// Extract claims
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
+			log.Printf("Failed to get claims from token")
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "Invalid token claims",
 			})
 		}
 
-		// Check token expiration
+		// Log all claims for debugging
+		log.Printf("Token claims: %+v", claims)
+
+		// Handle user ID
+		if id, exists := claims["id"]; exists {
+			c.Locals(UserIDKey, fmt.Sprintf("%v", id))
+			log.Printf("Set user ID: %v", id)
+		}
+
+		// Handle email
+		if email, exists := claims["Email"]; exists {
+			c.Locals(EmailKey, fmt.Sprintf("%v", email))
+			log.Printf("Set email: %v", email)
+		}
+
+		// Handle role
+		if role, exists := claims["role"]; exists {
+			c.Locals(RoleKey, fmt.Sprintf("%v", role))
+			log.Printf("Set role: %v", role)
+		}
+
+		// Verify token is still valid
 		if exp, ok := claims["exp"].(float64); ok {
-			expTime := time.Unix(int64(exp), 0)
-			if time.Now().After(expTime) {
+			if time.Now().Unix() > int64(exp) {
+				log.Printf("Token has expired")
 				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 					"error": "Token has expired",
 				})
 			}
-		} else {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Token missing expiration claim",
-			})
 		}
 
-		if err != nil || !token.Valid {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Invalid token",
-			})
-		}
-		// Store values in context
-		if email, ok := claims["Email"].(string); ok {
-			c.Locals(EmailKey, email)
-		}
-		if userId, ok := claims["id"].(float64); ok {
-			c.Locals(UserIDKey, fmt.Sprintf("%.0f", userId))
-		}
-		if role, ok := claims["role"].(string); ok {
-			c.Locals(RoleKey, role)
-		}
-
-		log.Println("JWT middleware completed successfully")
+		log.Printf("JWT middleware completed successfully. UserID: %v, Email: %v, Role: %v",
+			c.Locals(UserIDKey), c.Locals(EmailKey), c.Locals(RoleKey))
 
 		return c.Next()
 	}

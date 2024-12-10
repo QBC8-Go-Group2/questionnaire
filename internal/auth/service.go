@@ -174,7 +174,11 @@ func (s *service) CompleteLogin(ctx context.Context, req domain.CompleteLoginReq
 	_ = s.otpStore.DeleteOTP(ctx, req.Email)
 
 	// Generate JWT
-	token, err := s.jwtService.GenerateJWT(string(user.Role), user.Email, uint(user.ID))
+	token, err := s.jwtService.GenerateJWT(
+		fmt.Sprintf("%d", user.Role),
+		user.Email,
+		fmt.Sprintf("%d", user.ID),
+	)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate token: %w", err)
 	}
